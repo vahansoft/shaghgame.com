@@ -79,17 +79,33 @@ class IntroScene extends Phaser.Scene {
         // Skip button (responsive, touch-friendly on mobile)
         const skipBtnWidth = this.isMobile ? Math.max(140, 160 * this.scaleFactor) : Math.max(120, 150 * this.scaleFactor);
         const skipBtnHeight = this.isMobile ? Math.max(44, 50 * this.scaleFactor) : Math.max(40, 50 * this.scaleFactor);
-        const skipBtn = GraphicsHelper.createButton(this, width - skipBtnWidth / 2 - Math.max(20, 30 * this.scaleFactor), Math.max(35, 50 * this.scaleFactor), skipBtnWidth, skipBtnHeight, 0x7F8C8D, TranslationManager.t('skip'), Math.max(16, 20 * this.scaleFactor));
-        skipBtn.button.on('pointerdown', () => this.skipIntro());
+        const skipBtn = MobileHelper.createSimpleButton(
+            this, 
+            width - skipBtnWidth / 2 - Math.max(20, 30 * this.scaleFactor), 
+            Math.max(35, 50 * this.scaleFactor), 
+            skipBtnWidth, 
+            skipBtnHeight, 
+            0x7F8C8D, 
+            TranslationManager.t('skip'), 
+            Math.max(16, 20 * this.scaleFactor),
+            () => this.skipIntro()
+        );
         
         // Continue button (initially hidden, responsive, touch-friendly on mobile)
         const continueBtnWidth = this.isMobile ? Math.max(250, 280 * this.scaleFactor) : Math.max(200, 250 * this.scaleFactor);
         const continueBtnHeight = this.isMobile ? Math.max(60, 75 * this.scaleFactor) : Math.max(55, 70 * this.scaleFactor);
-        this.continueBtn = GraphicsHelper.createButton(this, width / 2, height - Math.max(70, 100 * this.scaleFactor), continueBtnWidth, continueBtnHeight, 0x27AE60, TranslationManager.t('continue'), Math.max(22, 28 * this.scaleFactor));
-        this.continueBtn.button.setVisible(false);
-        this.continueBtn.buttonText.setVisible(false);
-        this.continueBtn.shadow.setVisible(false);
-        this.continueBtn.button.on('pointerdown', () => this.goToMenu());
+        this.continueBtn = MobileHelper.createSimpleButton(
+            this, 
+            width / 2, 
+            height - Math.max(70, 100 * this.scaleFactor), 
+            continueBtnWidth, 
+            continueBtnHeight, 
+            0x27AE60, 
+            TranslationManager.t('continue'), 
+            Math.max(22, 28 * this.scaleFactor),
+            () => this.goToMenu()
+        );
+        this.continueBtn.container.setVisible(false);
         
         // Start animation
         this.time.delayedCall(500, () => this.showNextPart());
@@ -188,6 +204,7 @@ class IntroScene extends Phaser.Scene {
                 this.time.delayedCall(3500, () => this.showNextPart());
             } else {
                 // Show continue button with animation
+                this.continueBtn.container.setVisible(true);
                 this.continueBtn.button.setVisible(true);
                 this.continueBtn.buttonText.setVisible(true);
                 this.continueBtn.shadow.setVisible(true);
@@ -203,7 +220,7 @@ class IntroScene extends Phaser.Scene {
                 
                 // Pulse animation
                 this.tweens.add({
-                    targets: this.continueBtn.button,
+                    targets: this.continueBtn.container,
                     scaleX: 1.05,
                     scaleY: 1.05,
                     duration: 600,

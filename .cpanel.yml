@@ -1,0 +1,7 @@
+---
+deployment:
+  tasks:
+    - export:
+        - index.html
+        - src/
+      to: /home1/vahansoft/public_html

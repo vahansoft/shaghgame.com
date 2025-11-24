@@ -82,10 +82,28 @@ class MenuScene extends Phaser.Scene {
             const finalBtnHeight = Math.max(btnHeight, this.minTouchSize);
 
             const langButton = this.add.rectangle(x, langY, finalBtnWidth, finalBtnHeight, isSelected ? 0x27AE60 : 0xECF0F1)
-                .setInteractive({ useHandCursor: !this.isMobile })
                 .setStrokeStyle(Math.max(2, 3 * this.scaleFactor), isSelected ? 0x27AE60 : 0xBDC3C7, 1)
-                .setDepth(102)
-                .on('pointerdown', () => this.selectLanguage(lang.code));
+                .setDepth(102);
+            
+            // Set explicit hit area for better touch detection
+            langButton.setInteractive(
+                new Phaser.Geom.Rectangle(-finalBtnWidth/2, -finalBtnHeight/2, finalBtnWidth, finalBtnHeight),
+                Phaser.Geom.Rectangle.Contains
+            );
+            
+            // Add click handler
+            langButton.on('pointerdown', () => {
+                this.selectLanguage(lang.code);
+            });
+            
+            // Visual feedback
+            langButton.on('pointerdown', function() {
+                this.setScale(0.95);
+            });
+            
+            langButton.on('pointerup', function() {
+                this.setScale(1.0);
+            });
 
             const flagText = this.add.text(x, langY - Math.max(15, 20 * this.scaleFactor), lang.flag, {
                 fontSize: Math.max(30, 40 * this.scaleFactor) + 'px'
@@ -115,17 +133,20 @@ class MenuScene extends Phaser.Scene {
                     .setInteractive(false);
             }
 
-            langButton.on('pointerover', function () {
-                if (!isSelected) {
-                    this.setFillStyle(0xD5DBDB);
-                }
-            });
+            // Hover effects only on desktop
+            if (!this.isMobile) {
+                langButton.on('pointerover', function () {
+                    if (!isSelected) {
+                        this.setFillStyle(0xD5DBDB);
+                    }
+                });
 
-            langButton.on('pointerout', function () {
-                if (!isSelected) {
-                    this.setFillStyle(0xECF0F1);
-                }
-            });
+                langButton.on('pointerout', function () {
+                    if (!isSelected) {
+                        this.setFillStyle(0xECF0F1);
+                    }
+                });
+            }
 
             this.langButtons.push({ button: langButton, flagText, nameText, checkmark, lang });
         });
@@ -134,8 +155,17 @@ class MenuScene extends Phaser.Scene {
         const playBtnY = langPanelY + langPanelHeight / 2 + Math.max(50, 70 * this.scaleFactor);
         const playBtnHeight = this.isMobile ? Math.max(60, 75 * this.scaleFactor) : Math.max(65, 80 * this.scaleFactor);
         const playBtnWidth = this.isMobile ? Math.max(280, 320 * this.scaleFactor) : Math.max(240, 300 * this.scaleFactor);
-        const playBtn = GraphicsHelper.createButton(this, width / 2, playBtnY, playBtnWidth, playBtnHeight, 0x27AE60, TranslationManager.t('play'), Math.max(28, 36 * this.scaleFactor));
-        playBtn.button.on('pointerdown', () => this.startGame());
+        const playBtn = MobileHelper.createSimpleButton(
+            this, 
+            width / 2, 
+            playBtnY, 
+            playBtnWidth, 
+            playBtnHeight, 
+            0x27AE60, 
+            TranslationManager.t('play'), 
+            Math.max(28, 36 * this.scaleFactor),
+            () => this.startGame()
+        );
 
         // Level selection (if levels are unlocked, responsive) - positioned below play button
         if (typeof gameState !== 'undefined' && gameState.unlockedLevels && gameState.unlockedLevels.length > 1) {
@@ -158,18 +188,43 @@ class MenuScene extends Phaser.Scene {
                 const shadow = this.add.circle(x + 2, levelButtonsY + 2, levelBtnSize, 0x000000, 0.3);
 
                 const levelButton = this.add.circle(x, levelButtonsY, levelBtnSize, 0x3498DB)
-                    .setInteractive({ useHandCursor: !this.isMobile })
                     .setStrokeStyle(Math.max(2, 3 * this.scaleFactor), 0xFFFFFF, 0.9)
-                    .setDepth(102)
-                    .on('pointerdown', () => this.startLevel(levelId))
-                    .on('pointerover', function () {
+                    .setDepth(102);
+                
+                // Set explicit hit area (ensure minimum touch size)
+                const hitRadius = Math.max(levelBtnSize, this.minTouchSize);
+                levelButton.setInteractive(
+                    new Phaser.Geom.Circle(0, 0, hitRadius),
+                    Phaser.Geom.Circle.Contains
+                );
+                
+                // Add click handler
+                levelButton.on('pointerdown', () => {
+                    this.startLevel(levelId);
+                });
+                
+                // Visual feedback
+                // Visual feedback
+                levelButton.on('pointerdown', function() {
+                    this.setScale(0.9);
+                });
+                
+                levelButton.on('pointerup', function() {
+                    this.setScale(1.0);
+                });
+                
+                // Hover effects only on desktop
+                if (!this.isMobile) {
+                    levelButton.on('pointerover', function () {
                         this.setFillStyle(0x2980B9);
                         shadow.setAlpha(0.5);
-                    })
-                    .on('pointerout', function () {
+                    });
+                    
+                    levelButton.on('pointerout', function () {
                         this.setFillStyle(0x3498DB);
                         shadow.setAlpha(0.3);
                     });
+                }
 
                 const levelText = this.add.text(x, levelButtonsY, levelId.toString(), {
                     fontSize: Math.max(16, 20 * this.scaleFactor) + 'px',
@@ -185,8 +240,17 @@ class MenuScene extends Phaser.Scene {
         // Replay intro button (responsive) - positioned at bottom with spacing
         const replayBtnHeight = Math.max(45, 55 * this.scaleFactor);
         const replayBtnY = height - Math.max(80, 100 * this.scaleFactor);
-        const replayBtn = GraphicsHelper.createButton(this, width / 2, replayBtnY, Math.max(180, 220 * this.scaleFactor), replayBtnHeight, 0x7F8C8D, TranslationManager.t('introTitle'), Math.max(14, 18 * this.scaleFactor));
-        replayBtn.button.on('pointerdown', () => this.replayIntro());
+        const replayBtn = MobileHelper.createSimpleButton(
+            this, 
+            width / 2, 
+            replayBtnY, 
+            Math.max(180, 220 * this.scaleFactor), 
+            replayBtnHeight, 
+            0x7F8C8D, 
+            TranslationManager.t('introTitle'), 
+            Math.max(14, 18 * this.scaleFactor),
+            () => this.replayIntro()
+        );
     }
 
     createDecorativeElements() {

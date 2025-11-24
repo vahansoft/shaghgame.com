@@ -1,21 +1,29 @@
 // Graphics Helper - Utility functions for creating attractive visuals
 const GraphicsHelper = {
-    // Create a styled button
+    // Create a styled button - redesigned for mobile compatibility
     createButton(scene, x, y, width, height, color, text, fontSize = 20) {
-        // Button shadow
-        const shadow = scene.add.rectangle(x + 3, y + 3, width, height, 0x000000, 0.3);
-        
-        // Detect mobile for cursor style
+        // Detect mobile
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
                         (typeof window !== 'undefined' && window.innerWidth <= 768);
         
-        // Button background with gradient effect
-        const button = scene.add.rectangle(x, y, width, height, color)
-            .setInteractive({ useHandCursor: !isMobile })
-            .setStrokeStyle(3, 0xFFFFFF, 0.8)
-            .setDepth(1000); // Ensure button is on top
+        // Ensure minimum touch target size (44x44px recommended for mobile)
+        const finalWidth = Math.max(width, isMobile ? 44 : 30);
+        const finalHeight = Math.max(height, isMobile ? 44 : 30);
         
-        // Button text (non-interactive so clicks go through to button)
+        // Button shadow (non-interactive, behind everything)
+        const shadow = scene.add.rectangle(x + 3, y + 3, finalWidth, finalHeight, 0x000000, 0.3)
+            .setDepth(1)
+            .setInteractive(false);
+        
+        // Button background - this is the interactive element
+        const button = scene.add.rectangle(x, y, finalWidth, finalHeight, color)
+            .setStrokeStyle(3, 0xFFFFFF, 0.8)
+            .setDepth(1000); // High depth to be on top
+        
+        // Set explicit hit area for better touch detection
+        button.setInteractive(new Phaser.Geom.Rectangle(-finalWidth/2, -finalHeight/2, finalWidth, finalHeight), Phaser.Geom.Rectangle.Contains);
+        
+        // Button text (non-interactive, on top of button)
         const buttonText = scene.add.text(x, y, text, {
             fontSize: fontSize + 'px',
             color: '#FFFFFF',
@@ -24,20 +32,28 @@ const GraphicsHelper = {
         })
         .setOrigin(0.5)
         .setDepth(1001)
-        .setInteractive(false); // Make text non-interactive
+        .setInteractive(false); // Text should not block clicks
         
-        // Shadow should be behind
-        shadow.setDepth(999);
+        // Hover effects (only on desktop)
+        if (!isMobile) {
+            button.on('pointerover', function() {
+                this.setFillStyle(Phaser.Display.Color.ValueToColor(color).brighten(20).color);
+                shadow.setAlpha(0.5);
+            });
+            
+            button.on('pointerout', function() {
+                this.setFillStyle(color);
+                shadow.setAlpha(0.3);
+            });
+        }
         
-        // Hover effects
-        button.on('pointerover', function() {
-            this.setFillStyle(Phaser.Display.Color.ValueToColor(color).brighten(20).color);
-            shadow.setAlpha(0.5);
+        // Visual feedback on touch/click
+        button.on('pointerdown', function() {
+            this.setScale(0.95);
         });
         
-        button.on('pointerout', function() {
-            this.setFillStyle(color);
-            shadow.setAlpha(0.3);
+        button.on('pointerup', function() {
+            this.setScale(1.0);
         });
         
         return { button, buttonText, shadow };

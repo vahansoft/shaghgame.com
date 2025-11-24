@@ -50,8 +50,10 @@
         <!-- Phaser game will be rendered here -->
     </div>
     
-    <script src="node_modules/phaser/dist/phaser.min.js"></script>
+    <!-- Use CDN for Phaser in production, fallback to local if needed -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
     <script src="src/utils/TranslationManager.js"></script>
+    <script src="src/utils/MobileHelper.js"></script>
     <script src="src/utils/GraphicsHelper.js"></script>
     <script src="src/data/translations.js"></script>
     <script src="src/data/characters.js"></script>

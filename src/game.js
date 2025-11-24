@@ -71,7 +71,9 @@ const config = {
     },
     input: {
         activePointers: 3,
-        smoothFactor: 0
+        smoothFactor: 0,
+        touch: true,
+        mouse: true
     }
 };
 

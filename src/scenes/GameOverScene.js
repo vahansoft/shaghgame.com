@@ -123,8 +123,17 @@ class GameOverScene extends Phaser.Scene {
         // Menu button (responsive, touch-friendly on mobile)
         const menuBtnWidth = this.isMobile ? Math.max(250, 280 * this.scaleFactor) : Math.max(200, 250 * this.scaleFactor);
         const menuBtnHeight = this.isMobile ? Math.max(60, 75 * this.scaleFactor) : Math.max(55, 70 * this.scaleFactor);
-        const menuBtn = GraphicsHelper.createButton(this, width / 2, height - Math.max(60, 80 * this.scaleFactor), menuBtnWidth, menuBtnHeight, 0x27AE60, TranslationManager.t('menu'), Math.max(24, 32 * this.scaleFactor));
-        menuBtn.button.on('pointerdown', () => this.goToMenu());
+        const menuBtn = MobileHelper.createSimpleButton(
+            this, 
+            width / 2, 
+            height - Math.max(60, 80 * this.scaleFactor), 
+            menuBtnWidth, 
+            menuBtnHeight, 
+            0x27AE60, 
+            TranslationManager.t('menu'), 
+            Math.max(24, 32 * this.scaleFactor),
+            () => this.goToMenu()
+        );
     }
     
     createCelebrationParticles() {

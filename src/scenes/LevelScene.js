@@ -60,8 +60,17 @@ class LevelScene extends Phaser.Scene {
         // Menu button (touch-friendly size on mobile)
         const menuBtnSize = this.isMobile ? Math.max(120, 140 * this.scaleFactor) : Math.max(100, 120 * this.scaleFactor);
         const menuBtnHeight = this.isMobile ? Math.max(44, 50 * this.scaleFactor) : Math.max(35, 45 * this.scaleFactor);
-        const menuBtn = GraphicsHelper.createButton(this, width - menuBtnSize / 2 - panelPadding, panelPadding + panelHeight / 2, menuBtnSize, menuBtnHeight, 0x7F8C8D, TranslationManager.t('menu'), Math.max(14, 18 * this.scaleFactor));
-        menuBtn.button.on('pointerdown', () => this.goToMenu());
+        const menuBtn = MobileHelper.createSimpleButton(
+            this, 
+            width - menuBtnSize / 2 - panelPadding, 
+            panelPadding + panelHeight / 2, 
+            menuBtnSize, 
+            menuBtnHeight, 
+            0x7F8C8D, 
+            TranslationManager.t('menu'), 
+            Math.max(14, 18 * this.scaleFactor),
+            () => this.goToMenu()
+        );
         
         // Character pool area (responsive)
         this.characterPoolY = panelPadding + panelHeight + Math.max(30, 50 * this.scaleFactor);
@@ -109,14 +118,28 @@ class LevelScene extends Phaser.Scene {
             const charSprite = charGroup.body;
             
             // Make interactive with larger hit area for mobile
-            const hitArea = new Phaser.Geom.Circle(0, 0, Math.max(charSize, this.minTouchSize));
-            charSprite.setInteractive(hitArea, Phaser.Geom.Circle.Contains)
-                .setData('character', char)
-                .setData('isInPool', true)
-                .setData('charGroup', charGroup);
+            const hitRadius = Math.max(charSize * 0.6, this.minTouchSize);
+            charSprite.setInteractive(
+                new Phaser.Geom.Circle(0, 0, hitRadius),
+                Phaser.Geom.Circle.Contains
+            )
+            .setData('character', char)
+            .setData('isInPool', true)
+            .setData('charGroup', charGroup);
             
             // Enable dragging
             this.input.setDraggable(charSprite);
+            
+            // Visual feedback on touch
+            charSprite.on('pointerdown', function() {
+                if (!this.getData('used')) {
+                    this.setScale(1.1);
+                }
+            });
+            
+            charSprite.on('pointerup', function() {
+                this.setScale(1.0);
+            });
             
             const nameText = this.add.text(x, y + charSize * 0.9, char.name, {
                 fontSize: Math.max(12, 14 * this.scaleFactor) + 'px',
@@ -215,10 +238,15 @@ class LevelScene extends Phaser.Scene {
             const shadow = this.add.circle(x + 2, y + 2, slotSize, 0x000000, 0.2);
             
             // Slot with gradient effect - larger hit area for mobile
-            const slotHitSize = Math.max(slotSize, this.minTouchSize);
+            const slotHitSize = Math.max(slotSize * 1.2, this.minTouchSize);
             const slot = this.add.circle(x, y, slotSize, 0xECF0F1, 0.8)
-                .setStrokeStyle(Math.max(2, 3 * this.scaleFactor), 0xBDC3C7, 1)
-                .setInteractive(new Phaser.Geom.Circle(0, 0, slotHitSize), Phaser.Geom.Circle.Contains);
+                .setStrokeStyle(Math.max(2, 3 * this.scaleFactor), 0xBDC3C7, 1);
+            
+            // Set explicit hit area
+            slot.setInteractive(
+                new Phaser.Geom.Circle(0, 0, slotHitSize),
+                Phaser.Geom.Circle.Contains
+            );
             
             // Slot number
             const slotNumber = this.add.text(x, y, (index + 1).toString(), {
@@ -339,8 +367,17 @@ class LevelScene extends Phaser.Scene {
         const pullBtnY = height - Math.max(150, 200 * this.scaleFactor);
         const pullBtnWidth = this.isMobile ? Math.max(250, 300 * this.scaleFactor) : Math.max(200, 250 * this.scaleFactor);
         const pullBtnHeight = this.isMobile ? Math.max(60, 75 * this.scaleFactor) : Math.max(55, 70 * this.scaleFactor);
-        const pullBtn = GraphicsHelper.createButton(this, width / 2, pullBtnY, pullBtnWidth, pullBtnHeight, 0xE74C3C, TranslationManager.t('pullTurnip'), Math.max(22, 28 * this.scaleFactor));
-        pullBtn.button.on('pointerdown', () => this.attemptPull());
+        const pullBtn = MobileHelper.createSimpleButton(
+            this, 
+            width / 2, 
+            pullBtnY, 
+            pullBtnWidth, 
+            pullBtnHeight, 
+            0xE74C3C, 
+            TranslationManager.t('pullTurnip'), 
+            Math.max(22, 28 * this.scaleFactor),
+            () => this.attemptPull()
+        );
         
         // Pulse animation for pull button
         this.tweens.add({
@@ -356,10 +393,9 @@ class LevelScene extends Phaser.Scene {
     
     setupPlacementMechanic() {
         if (this.level.placementMechanic === 'click-place' || this.level.placementMechanic === 'hybrid') {
-            // Add click/touch handlers to slots
+            // Add click/touch handlers to slots (already interactive, just add handler)
             this.placementSlots.forEach((slot, index) => {
-                slot.slot.setInteractive({ useHandCursor: !this.isMobile })
-                    .on('pointerdown', () => this.handleSlotClick(index));
+                slot.slot.on('pointerdown', () => this.handleSlotClick(index));
             });
             
             // Add click/touch handlers to character pool
