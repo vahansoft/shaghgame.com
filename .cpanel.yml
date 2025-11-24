@@ -1,7 +1,7 @@
 ---
 deployment:
   tasks:
-    - export:
-        - index.html
-        - src/
-      to: /home1/vahansoft/public_html
+    - export DEPLOYPATH=/home/example/public_html/
+    - /bin/cp -R src $DEPLOYPATH
+    - /bin/cp -R index.html $DEPLOYPATH
+    - /bin/chmod -R 755 $DEPLOYPATH
