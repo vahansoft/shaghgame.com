@@ -1,24 +1,33 @@
 {
-    "name": "shaghgame",
-    "version": "1.0.0",
-    "description": "Armenian Turnip Fairytale Browser Game",
-    "main": "index.html",
-    "scripts": {
-        "start": "npx http-server -p 8080 -c-1",
-        "dev": "npx http-server -p 8080 -c-1"
-    },
-    "keywords": [
-        "game",
-        "phaser",
-        "browser-game",
-        "turnip"
-    ],
-    "author": "",
-    "license": "MIT",
-    "dependencies": {
-        "phaser": "^3.80.1"
-    },
-    "devDependencies": {
-        "http-server": "^14.1.1"
-    }
+  "name": "shaghgame",
+  "version": "2.0.1",
+  "description": "Armenian Turnip Fairytale Browser Game - React Edition",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "version": "node scripts/version.js",
+    "release": "node scripts/version.js && node scripts/build-release.js",
+    "deploy": "bash scripts/build-and-commit.sh"
+  },
+  "keywords": [
+    "game",
+    "react",
+    "browser-game",
+    "turnip",
+    "puzzle"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.0.8"
+  }
 }
